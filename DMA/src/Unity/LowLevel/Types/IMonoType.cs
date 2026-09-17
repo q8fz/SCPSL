@@ -1,0 +1,19 @@
+// DMA Base - marker for remotely allocated mono types.
+
+namespace DmaBase.Unity.LowLevel.Types
+{
+    public interface IMonoType
+    {
+        /// <summary>
+        /// Data for this Mono object. May include padding for Mono interop.
+        /// </summary>
+        Span<byte> Data { get; }
+
+        /// <summary>
+        /// Convert the object to a RemoteBytes object and persists it to Remote DmaMemory.
+        /// Incurs a Memory Write.
+        /// </summary>
+        /// <returns></returns>
+        RemoteBytes ToRemoteBytes();
+    }
+}
