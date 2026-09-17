@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>DmaBase</RootNamespace>
+    <AssemblyName>SCPSLExternal</AssemblyName>
+    <TargetName>SCPSLExternal</TargetName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);NU1901;NU1902;NU1903;NU1904</NoWarn>
+    <DefineConstants>$(DefineConstants);EXTERNAL</DefineConstants>
+
+    <!-- Single-file bundling for release publishing -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>false</SelfContained>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishDir Condition="'$(PublishDir)' == ''">$(MSBuildProjectDirectory)\..\..\Built\External\</PublishDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ClickableTransparentOverlay" Version="9.2.0" />
+    <IconFiles Include="$(MSBuildProjectDirectory)\Unity\Icons\*.png" />
+  </ItemGroup>
+
+  <Target Name="CopyIconsToOutDir" AfterTargets="Build">
+    <Copy SourceFiles="@(IconFiles)" DestinationFolder="$(OutDir)Icons\" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="AutoPublishRelease" AfterTargets="Build" Condition="'$(Configuration)' == 'Release' and '$(BuildingInsidePublish)' != 'true'">
+    <MSBuild Projects="$(MSBuildProjectFile)" Targets="Publish" Properties="BuildingInsidePublish=true;Configuration=Release;RuntimeIdentifier=win-x64" />
+  </Target>
+
+  <Target Name="DeployRequiredFiles" AfterTargets="Publish" Condition="'$(Configuration)' == 'Release'">
+    <Copy SourceFiles="@(IconFiles)" DestinationFolder="$(PublishDir)Icons\" SkipUnchangedFiles="true" />
+
+    <ItemGroup>
+      <FilesToRemove Include="$(PublishDir)*.pdb" />
+      <FilesToRemove Include="$(PublishDir)vcruntime140.dll" />
+      <FilesToRemove Include="$(PublishDir)*.deps.json" />
+      <FilesToRemove Include="$(PublishDir)*.runtimeconfig.json" />
+      <FilesToRemove Include="$(PublishDir)DMBBase.dll" />
+    </ItemGroup>
+    <Delete Files="@(FilesToRemove)" TreatErrorsAsWarnings="true" />
+  </Target>
+
+</Project>
